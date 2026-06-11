@@ -6,6 +6,10 @@ on:
         description: "The tag version you want to build"
   schedule:
     - cron: "0 8 12 * *"
+
+permissions:
+  contents: write
+  
 jobs:
   build:
     name: Build
