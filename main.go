@@ -243,8 +243,20 @@ func release(source string, destination string, output string, ruleSetOutput str
 	return nil
 }
 
-func setActionOutput(name string, content string) {
-	os.Stdout.WriteString("::set-output name=" + name + "::" + content + "\n")
+func setActionOutput(name string, content string) error {
+    outputFile := os.Getenv("GITHUB_OUTPUT")
+    if outputFile == "" {
+        return nil
+    }
+
+    f, err := os.OpenFile(outputFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    if err != nil {
+        return err
+    }
+    defer f.Close()
+
+    _, err = fmt.Fprintf(f, "%s=%s\n", name, content)
+    return err
 }
 
 func main() {
