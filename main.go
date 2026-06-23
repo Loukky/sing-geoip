@@ -91,8 +91,10 @@ func parse(binary []byte) (metadata maxminddb.Metadata, countryMap map[string][]
 		if err != nil {
 			return
 		}
-		// idk why
 		code := strings.ToLower(country.RegisteredCountry.IsoCode)
+		if code == "" {
+			code = strings.ToLower(country.Country.IsoCode)
+		}
 		countryMap[code] = append(countryMap[code], ipNet)
 	}
 	err = networks.Err()
@@ -213,6 +215,9 @@ func release(source string, destination string, output string, ruleSetOutput str
 		return err
 	}
 	for countryCode, ipNets := range countryMap {
+		if countryCode == "" {
+			continue
+		}
 		var headlessRule option.DefaultHeadlessRule
 		headlessRule.IPCIDR = make([]string, 0, len(ipNets))
 		for _, cidr := range ipNets {
@@ -239,7 +244,11 @@ func release(source string, destination string, output string, ruleSetOutput str
 		outputRuleSet.Close()
 	}
 
-	setActionOutput("tag", *sourceRelease.TagName)
+	tagName := os.Getenv("TAG_NAME")
+	if tagName == "" {
+		tagName = *sourceRelease.TagName
+	}
+	setActionOutput("tag", tagName)
 	return nil
 }
 

@@ -29,10 +29,11 @@ Artifacts in `.gitignore`: `*.db`, `*.mmdb`, `/rule-set/`, `/release/`.
 ## Key env vars
 
 | Var | Effect |
-|---|---|
+|---|---|---|
 | `ACCESS_TOKEN` | GitHub API auth (optional, for higher rate limits) |
 | `FIXED_RELEASE` | Pin a specific upstream release tag instead of latest |
 | `NO_SKIP=true` | Force rebuild even if destination release is up-to-date |
+| `TAG_NAME` | Override release tag (default: `date +%Y%m%d%H%M` from workflow) |
 
 ## CI
 
@@ -41,9 +42,11 @@ Artifacts in `.gitignore`: `*.db`, `*.mmdb`, `/rule-set/`, `/release/`.
 
 ## Release flow
 
-1. `go run -v .` downloads `Country.mmdb` from `Loukky/geoip` latest release, converts it
-2. If destination (`sagernet/sing-geoip`) release name already contains the source tag, it skips (unless `NO_SKIP=true`)
-3. On release: pushes `release` branch with `.db`+`.sha256sum`, `rule-set` branch with `.srs` files, and creates a GitHub release
+1. Workflow generates `TAG_NAME=$(date +%Y%m%d%H%M)`
+2. `go run -v .` downloads `Country.mmdb` from `Loukky/geoip` latest release, converts it
+3. If destination (`sagernet/sing-geoip`) release tag already contains the source tag, it skips (unless `NO_SKIP=true`)
+4. On release: creates GitHub release with `TAG_NAME`, pushes `release` branch with `.db`+`.sha256sum`, `rule-set` branch with `.srs` files
+5. Old releases/tags cleaned up (keeps latest 3, `delete_tags: true`)
 
 ## Import ordering (gci)
 
